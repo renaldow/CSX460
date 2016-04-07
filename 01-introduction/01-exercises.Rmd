@@ -22,10 +22,30 @@ Write a function (f) that takes a vector of numbers, **x**, and returns a vector
 ### Solution 
 
 ```{r}
-f <- function(x) {
+#f <- function(x) {
   
   # ...
+  #f = print("test string")
+#}
+
+#f <- function() { 
+ # for (i in 1:10) {
+  #  if (!i %% 2){
+     # next
+    #}
+     # print(i)
+  #}
+#}
+
+ x <- c( 1, 5, 2, 8 ) 
+prod(x) / x
+
+f <- function() { 
+  x <- c( 1, 5, 2, 8 ) 
   
+  for(i in x){
+      print(i)
+  }
 }
 
 ```
