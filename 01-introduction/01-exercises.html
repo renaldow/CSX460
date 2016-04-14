@@ -142,8 +142,10 @@ $(document).ready(function () {
   #}
 #}
 
-
-f &lt;- function() { 
+ x &lt;- c( 1, 5, 2, 8 ) 
+prod(x) / x</code></pre>
+<pre><code>## [1] 80 16 40 10</code></pre>
+<pre class="r"><code>f &lt;- function() { 
   x &lt;- c( 1, 5, 2, 8 ) 
   
   for(i in x){
@@ -167,6 +169,16 @@ f &lt;- function() {
   # ...
   
 }</code></pre>
+<p>myFunc &lt;- function (x, y) { out &lt;- x^2 out &lt;- out + y out }</p>
+<p>myFunc(2,3)</p>
+<pre class="r"><code>myFunc &lt;- function (x, y) {
+  result &lt;- x^2
+  result &lt;- result + y
+  result
+}
+
+myFunc(2,3)</code></pre>
+<pre><code>## [1] 7</code></pre>
 </div>
 </div>
 
