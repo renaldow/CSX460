@@ -11,15 +11,15 @@ x <- 1:20
 #create empty array vector
 vector <- vector(mode="character", length=0)
 
-#create function to convert to Fizz, Buzz, or FizzBuzz
+#Create function to convert to Fizz, Buzz, or FizzBuzz
 f <- function(numbers) {
   
   for (i in 1:length(numbers)) { 
     
     #Use modulus to find if multiple of 3
-    if(numbers[i] %% 3 == 0)
+    if((numbers[i] %% 3 == 0) && (numbers[i] %% 5 == 0))
     {
-      vector[i] <- "Fizz"
+      vector[i] <- "FizzBuzz"
     }
     #Use modulus to find if multiple of 5
     else if(numbers[i] %% 5 == 0)
@@ -27,14 +27,13 @@ f <- function(numbers) {
       vector[i] <- "Buzz"
     }
     #Use modulus to find if multiple of 3 and 5
-    else if((numbers[i] %% 3 == 0) && (numbers[i] %% 5 == 0))
+    else if(numbers[i] %% 3 == 0)
     {
-      vector[i] <- "FizzBuzz"
+      vector[i] <- "Fizz"
     }
     else {
       vector[i] <- numbers[i]
     }
-    
   }
   
   vector

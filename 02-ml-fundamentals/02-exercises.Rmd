@@ -36,7 +36,61 @@ Hint: See `?cars2010`
 - After the **Fuel Economy** data is loaded, combine three data sets into one data set. (Note: The name `dat` is very often used in these situations, `data` is a reserved R word.)  
 
 ```{r}
-dat <- ... # cars2010, cars2011, cars2012)    # Define 
+dat <- cars2010 # cars2010, cars2011, cars2012)    # Define 
+
+naive_guess = mean(dat$FE)
+
+set.seed(314)
+
+samp <- dat %>% dplyr::sample_n(10) # you can also do just sample_n(10) since no conflicts with deep lyer package
+
+samp %>% ggplot(aes(x=EngDispl, y=FE) ) + geom_point()
+
+#Naive guess (red line) is just a good place to start, always need a good place to start
+samp %>% ggplot(aes(x=EngDispl, y=FE) ) + geom_point() + geom_hline(yintercept=naive_guess, color="red")
+
+#graph showing naive guess and linear model
+samp %>% ggplot(aes(x=EngDispl, y=FE) ) + geom_point() + geom_hline(yintercept=naive_guess, color="red") + stat_smooth(method = "lm", se=FALSE)
+
+plot(samp$FE - naive_guess)
+qplot(samp$FE - naive_guess)
+
+dat$FE
+
+(dat$FE - naive_guess)^2 %>% mean %>% sqrt
+
+fit.dat <- lm(FE ~ EngDispl, data = dat)
+
+fit.dat
+
+fit.dat <- lm(FE ~ EngDispl + NumCyl, data = dat)
+
+fit.dat
+
+fit.dat <- lm(FE ~ EngDispl + NumCyl + NumGears, data = dat)
+
+fit.dat
+
+fit.dat %>% summary()
+
+fit.dat <- lm(FE ~ EngDispl + NumCyl + NumGears, data = dat)
+
+fit.dat
+
+fit.dat <- lm(FE ~ EngDispl + CarlineClassDesc + EngDispl, data = dat)
+
+fit.dat
+
+#dot means use all variables 
+fit.dat <- lm(FE ~ . + EngDispl, data = dat)
+
+fit.dat
+
+dat %>% select(CarlineClassDesc)
+
+dat %>% select(CarlineClassDesc) %>% table
+
+
 ```
 
 
