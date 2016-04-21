@@ -1,0 +1,211 @@
+---
+title: "02-exercises"
+author: "Christopher Brown"
+date: "April 13, 2016"
+output: html_document
+---
+
+This exercise uses the **Fuel Economy** data set from the **AppliedPredicitiveModeling** package.
+
+Note: The following will set-up your environment for this exercise. If you get an error stating that the packages have not been found, you need to install those packages.
+
+
+```{r,echo=FALSE}
+
+packs <-  c('AppliedPredictiveModeling', 'ggplot2', 'magrittr', 'dplyr')
+
+for( nm in packs ) { 
+  # message(nm)
+  if( ! nm  %in% installed.packages()[,1]  ) install.packages(nm)
+  library(nm, character.only = TRUE)
+}
+
+# Load data set into environment
+data(FuelEconomy)
+... = NULL  # Needed for aesthetics 
+
+```
+
+
+
+## Exercise 1
+
+Hint: See `?cars2010`
+
+
+- After the **Fuel Economy** data is loaded, combine three data sets into one data set. (Note: The name `dat` is very often used in these situations, `data` is a reserved R word.)  
+
+```{r}
+dat <- cars2010 # cars2010, cars2011, cars2012)    # Define 
+
+naive_guess = mean(dat$FE)
+
+set.seed(314)
+
+samp <- dat %>% dplyr::sample_n(10) # you can also do just sample_n(10) since no conflicts with deep lyer package
+
+samp %>% ggplot(aes(x=EngDispl, y=NumCyl) ) + geom_point()
+
+#Naive guess (red line) is just a good place to start, always need a good place to start
+samp %>% ggplot(aes(x=EngDispl, y=FE) ) + geom_point() + geom_hline(yintercept=naive_guess, color="red")
+
+#graph showing naive guess and linear model
+samp %>% ggplot(aes(x=EngDispl, y=FE) ) + geom_point() + geom_hline(yintercept=naive_guess, color="red") + stat_smooth(method = "lm", se=FALSE)
+
+plot(samp$FE - naive_guess)
+qplot(samp$FE - naive_guess)
+
+dat$FE
+
+#square each term
+test1Squared <- (dat$FE - naive_guess)^2
+
+#take mean of entire set
+test1mean <- (dat$FE - naive_guess)^2 %>% mean
+
+#take square root of entire set
+test1sqrt <- (dat$FE - naive_guess)^2 %>% mean %>% sqrt
+
+fit.dat <- lm(FE ~ EngDispl, data = dat)
+
+fit.dat
+
+fit.dat <- lm(FE ~ EngDispl + NumCyl, data = dat)
+
+fit.dat
+
+fit.dat <- lm(FE ~ EngDispl + NumCyl + NumGears, data = dat)
+
+fit.dat
+
+fit.dat %>% summary()
+
+fit.dat <- lm(FE ~ EngDispl + NumCyl + NumGears, data = dat)
+
+fit.dat
+
+fit.dat <- lm(FE ~ EngDispl + CarlineClassDesc + EngDispl, data = dat)
+
+fit.dat
+
+#dot means use all variables 
+fit.dat <- lm(FE ~ . + EngDispl, data = dat)
+
+fit.dat
+
+dat %>% select(CarlineClassDesc)
+
+dat %>% select(CarlineClassDesc) %>% table
+
+
+```
+
+
+- What is a good "naive guess" of FE? Show your work
+
+```{r}
+naive_guess <- ...
+```
+
+
+- plot FE (Fuel Econonomy) vs. EngDisp. Plot the naive guess.
+
+```{r}
+# ... ggplot2  
+```
+
+- Sample 10 observations from `dat`
+- Plot this data. Add a line for the naive_guess. 
+
+
+```{r}
+
+set.seed(314) 
+
+# Sample 
+samp <- .... 
+
+# Plots 
+...
+
+
+```
+
+
+## Exercise 2:
+
+
+Write a loss functions for calculating:
+- Root Mean Square Error
+- Mean Absolute Error
+- Median Absolute Error
+
+All functions should accept two arguments: 
+
+
+```{r}
+
+rmse <- function(y,yhat) {
+  # ...
+}
+
+mae <- function(y, yhat) {
+  # ...
+}
+
+medae <- function(y, yhat) { 
+  # ...
+}
+
+```
+
+Use these functions to evaluate the loss/performance of:
+- the naive guess
+
+
+
+## Exercise 3: Linear Model and Model Performance 
+
+- Use `lm` to create a linear model fitting the relationship between FE and EngDispl for the cars2010 data set
+
+
+```{r}
+fit.2010 <- ... 
+```
+
+- Use your functions to evaluate the training error
+- Use your model to:
+-- predict the FE for 2011. What is the RMSE errors associated with the predictions.
+-- predict the FE for 2012. What is the RMSE errors associated with the predictions.
+
+```{r}
+
+y.2010 <- ... 
+y.2011 <- ... 
+y.2012 <- ...
+
+rmse.2010 <- ...
+rmse.2011 <- ...
+rmse.2012 <- ... 
+
+```
+
+
+```{r}
+# DO NOT EDIT 
+rmse.2010 
+rmse.2011
+rmse.2012
+```
+
+
+## Exercise 4: 
+
+- Model the fuel economy (`FE`) as a function of `EngDispl`, `NumCyl` and `VarValve` using the `cars2011` data set.  
+- Provide betas
+
+
+```{r}
+fit.2010 <- ...
+betas <- ...
+```

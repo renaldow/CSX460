@@ -36,13 +36,13 @@ Hint: See `?cars2010`
 - After the **Fuel Economy** data is loaded, combine three data sets into one data set. (Note: The name `dat` is very often used in these situations, `data` is a reserved R word.)  
 
 ```{r}
-dat <- cars2010 # cars2010, cars2011, cars2012)    # Define 
+dat3years <- rbind(cars2010,cars2011,cars2012)
 
-naive_guess = mean(dat$FE)
+naive_guess = mean(dat3years$FE)
 
 set.seed(314)
 
-samp <- dat %>% dplyr::sample_n(10) # you can also do just sample_n(10) since no conflicts with deep lyer package
+samp <- dat3years %>% dplyr::sample_n(10) # you can also do just sample_n(10) since no conflicts with deep lyer package
 
 samp %>% ggplot(aes(x=EngDispl, y=FE) ) + geom_point()
 
@@ -55,41 +55,39 @@ samp %>% ggplot(aes(x=EngDispl, y=FE) ) + geom_point() + geom_hline(yintercept=n
 plot(samp$FE - naive_guess)
 qplot(samp$FE - naive_guess)
 
-dat$FE
+#dat3years$FE
 
-(dat$FE - naive_guess)^2 %>% mean %>% sqrt
+(dat3years$FE - naive_guess)^2 %>% mean %>% sqrt
 
-fit.dat <- lm(FE ~ EngDispl, data = dat)
+fit.dat3years <- lm(FE ~ EngDispl, data = dat3years)
 
-fit.dat
+fit.dat3years
 
-fit.dat <- lm(FE ~ EngDispl + NumCyl, data = dat)
+fit.dat3years <- lm(FE ~ EngDispl + NumCyl, data = dat3years)
 
-fit.dat
+fit.dat3years
 
-fit.dat <- lm(FE ~ EngDispl + NumCyl + NumGears, data = dat)
+fit.dat3years <- lm(FE ~ EngDispl + NumCyl + NumGears, data = dat3years)
 
-fit.dat
+fit.dat3years
 
-fit.dat %>% summary()
+fit.dat3years <- lm(FE ~ EngDispl + CarlineClassDesc + EngDispl, data = dat3years)
 
-fit.dat <- lm(FE ~ EngDispl + NumCyl + NumGears, data = dat)
+fit.dat3years
 
-fit.dat
+fit.dat3years %>% summary()
 
-fit.dat <- lm(FE ~ EngDispl + CarlineClassDesc + EngDispl, data = dat)
-
-fit.dat
 
 #dot means use all variables 
-fit.dat <- lm(FE ~ . + EngDispl, data = dat)
+fit.dat3years <- lm(FE ~ . + EngDispl, data = dat3years)
 
-fit.dat
+fit.dat3years
 
-dat %>% select(CarlineClassDesc)
+#sample 10 CarlineClassDesc
+dat3years %>% select(CarlineClassDesc) %>% sample_n(10)
 
-dat %>% select(CarlineClassDesc) %>% table
-
+#print table count for each CarlineClassDesc type
+dat3years %>% select(CarlineClassDesc) %>% table
 
 ```
 
@@ -97,7 +95,13 @@ dat %>% select(CarlineClassDesc) %>% table
 - What is a good "naive guess" of FE? Show your work
 
 ```{r}
-naive_guess <- ...
+
+dat3years <- rbind(cars2010,cars2011,cars2012)
+
+naive_guess = mean(dat3years$FE)
+
+naive_guess
+
 ```
 
 
@@ -105,6 +109,9 @@ naive_guess <- ...
 
 ```{r}
 # ... ggplot2  
+
+dat3years %>% ggplot(aes(x=EngDispl, y=FE) ) + geom_point()
+
 ```
 
 - Sample 10 observations from `dat`
@@ -116,10 +123,11 @@ naive_guess <- ...
 set.seed(314) 
 
 # Sample 
-samp <- .... 
 
-# Plots 
-...
+samp <- dat3years %>% dplyr::sample_n(10) 
+
+#Naive guess (red line) is just a good place to start, always need a good place to start
+samp %>% ggplot(aes(x=EngDispl, y=FE) ) + geom_point() + geom_hline(yintercept=naive_guess, color="red")
 
 
 ```
@@ -129,25 +137,28 @@ samp <- ....
 
 
 Write a loss functions for calculating:
+
 - Root Mean Square Error
 - Mean Absolute Error
 - Median Absolute Error
 
 All functions should accept two arguments: 
 
-
 ```{r}
 
 rmse <- function(y,yhat) {
-  # ...
+
+  ( y - yhat )^2  %>% mean %>% sqrt 
 }
 
 mae <- function(y, yhat) {
-  # ...
+  
+  abs( y - yhat ) %>% mean()
 }
 
 medae <- function(y, yhat) { 
-  # ...
+  
+  abs( y - yhat ) %>% median()
 }
 
 ```
@@ -155,15 +166,15 @@ medae <- function(y, yhat) {
 Use these functions to evaluate the loss/performance of:
 - the naive guess
 
-
-
 ## Exercise 3: Linear Model and Model Performance 
 
 - Use `lm` to create a linear model fitting the relationship between FE and EngDispl for the cars2010 data set
 
 
 ```{r}
-fit.2010 <- ... 
+
+fit.2010 <- lm( FE ~ EngDispl, data=cars2010 )
+
 ```
 
 - Use your functions to evaluate the training error
@@ -173,13 +184,15 @@ fit.2010 <- ...
 
 ```{r}
 
-y.2010 <- ... 
-y.2011 <- ... 
-y.2012 <- ...
+#Predict FE for 2010, 2011, 2012 using lm from 2010
+y.2010 <- predict( fit.2010, data=cars2010 )
+y.2011 <- predict( fit.2010, data=cars2011 )
+y.2012 <- predict( fit.2010, data=cars2012 )
 
-rmse.2010 <- ...
-rmse.2011 <- ...
-rmse.2012 <- ... 
+#Calculate RMSE error
+rmse.2010 <- rmse( cars2010$FE,y.2010)
+rmse.2011 <- rmse( cars2011$FE,y.2011)
+rmse.2012 <- rmse( cars2012$FE,y.2012)
 
 ```
 
@@ -199,6 +212,16 @@ rmse.2012
 
 
 ```{r}
-fit.2010 <- ...
-betas <- ...
+fit.2011 <- lm( FE ~ EngDispl + NumCyl + VarValveTiming, data=cars2011 ) 
+
+summary(fit.2011)
+
+install.packages("lm.beta")
+library(lm.beta)
+
+fit.2011.beta <- lm.beta(fit.2011)
+
+summary(fit.2011.beta)
+coef(fit.2011.beta)
+
 ```
