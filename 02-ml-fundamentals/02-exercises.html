@@ -9,7 +9,6 @@
 <meta name="generator" content="pandoc" />
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<meta name="author" content="Christopher Brown" />
 
 <meta name="date" content="2016-04-13" />
 
@@ -110,7 +109,6 @@ $(document).ready(function () {
 
 
 <h1 class="title">02-exercises</h1>
-<h4 class="author"><em>Christopher Brown</em></h4>
 <h4 class="date"><em>April 13, 2016</em></h4>
 
 </div>
@@ -487,7 +485,7 @@ medae &lt;- function(y, yhat) {
 <li>Use your functions to evaluate the training error</li>
 <li>Use your model to: – predict the FE for 2011. What is the RMSE errors associated with the predictions. – predict the FE for 2012. What is the RMSE errors associated with the predictions.</li>
 </ul>
-<pre class="r"><code>#Predict FE for 2010, 2011, 2012
+<pre class="r"><code>#Predict FE for 2010, 2011, 2012 using lm from 2010
 y.2010 &lt;- predict( fit.2010, data=cars2010 )
 y.2011 &lt;- predict( fit.2010, data=cars2011 )
 y.2012 &lt;- predict( fit.2010, data=cars2012 )
@@ -515,8 +513,32 @@ rmse.2010 </code></pre>
 </li>
 <li>Provide betas</li>
 </ul>
-<pre class="r"><code>#fit.2010 &lt;- 
-#betas &lt;- </code></pre>
+<pre class="r"><code>fit.2011 &lt;- lm( FE ~ EngDispl + NumCyl + VarValveTiming, data=cars2011 ) 
+
+summary(fit.2011)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = FE ~ EngDispl + NumCyl + VarValveTiming, data = cars2011)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -10.687  -2.768  -0.960   2.279  19.124 
+## 
+## Coefficients:
+##                Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)     52.6644     1.4701  35.823  &lt; 2e-16 ***
+## EngDispl        -3.9056     0.5246  -7.445 1.71e-12 ***
+## NumCyl          -1.1102     0.4268  -2.601  0.00987 ** 
+## VarValveTiming   3.5937     0.8862   4.055 6.76e-05 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 4.828 on 241 degrees of freedom
+## Multiple R-squared:  0.7283, Adjusted R-squared:  0.725 
+## F-statistic: 215.4 on 3 and 241 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>coef(fit.2011)</code></pre>
+<pre><code>##    (Intercept)       EngDispl         NumCyl VarValveTiming 
+##      52.664445      -3.905643      -1.110172       3.593704</code></pre>
 </div>
 
 

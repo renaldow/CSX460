@@ -1,8 +1,9 @@
 ---
 title: "02-exercises"
-author: "Christopher Brown"
+instructor: Christopher Brown
+student: Renaldo Williams
 date: "April 13, 2016"
-output: html_document
+output: pdf_document
 ---
 
 This exercise uses the **Fuel Economy** data set from the **AppliedPredicitiveModeling** package.
@@ -25,8 +26,6 @@ data(FuelEconomy)
 ... = NULL  # Needed for aesthetics 
 
 ```
-
-
 
 ## Exercise 1
 
@@ -216,12 +215,6 @@ fit.2011 <- lm( FE ~ EngDispl + NumCyl + VarValveTiming, data=cars2011 )
 
 summary(fit.2011)
 
-install.packages("lm.beta")
-library(lm.beta)
-
-fit.2011.beta <- lm.beta(fit.2011)
-
-summary(fit.2011.beta)
-coef(fit.2011.beta)
+coef(fit.2011)
 
 ```

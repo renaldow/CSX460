@@ -1,5 +1,5 @@
 ---
-title: "Class 2"
+title: "class 3"
 output: html_document
 ---
 
@@ -22,57 +22,7 @@ summary(cars)
 You can also embed plots, for example:
 
 ```{r pressure, echo=FALSE}
-#plot(pressure)
-
-apropos("prop")
-
-library(randomForest)
-
-sessionInfo()
-
-pages <- 97
-
-town <- "richmand"
-
-
-month.abb
-
-
-weights <- c(90, 150, 111, 123)
-
-weights
-
-mean(weights)
-
-colors <- c("red", "blue", "red", "white", "green")
-
-colors2 <- as.factor(colors)
-
-colors2
-
-both <- list(colors = colors2, weight = weights)
-
- both[[1]]
- 
- mat <- matrix(1:12, nrow=3)
- 
- mat[1, 2:3]
- 
- 
- x <- c(9, 15, 11, 23)
- xhat <- c(7, 13, 9, 21)
- 
- delta <- (x - xhat)^2 %>% 
-   
-    x <- c(3, 4, 11, 23)
- xhat <- c(5, 13, 29, 51)
- 
-  delta <- (x - xhat)
-  
-  delta <- abs(x - xhat)
-  
-  delta <- (x - xhat) %>% abs() %>% sum()
-
+plot(pressure)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
