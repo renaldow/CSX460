@@ -1,6 +1,6 @@
 ---
 title: "03-exercises"
-author: "Your Name Here"
+author: "Renaldo Williams"
 date: "April 20, 2016"
 output: html_document
 ---
@@ -58,13 +58,39 @@ Using Fuel Economy data set from the **AppliedPredictiveModeling** Package.
 
 ```{r}
 
+?stepAIC
+
  # Your work here
+
+fit.min <- lm( FE ~ 1, fe )
+
+stepAIC( fit.min, scope = ~ 1, direction = "backward")
+
+fit.full <- lm(FE ~ ., fe)
+
+fit.full
+
+stepAIC( fit.full, scope = ~ 1, direction = "backward")
+
+# wont work because its saying compare previous model to the previous model
+# stepAIC( fit.min, scope = ~ ., direction = "forward")
+
+# print out features
+fe %>% names %>% cat( sep =" + ")
+
+#manually paste features into function
+stepAIC( fit.full, scope = ~ 1 + EngDispl + NumCyl + Transmission + AirAspirationMethod + NumGears + TransLockup + TransCreeperGear + DriveDesc + IntakeValvePerCyl + ExhaustValvesPerCyl + CarlineClassDesc + VarValveTiming + VarValveLift, direction = "forward")
 
 ```
 
 - Are they the same model? If not why?  Which is better?
 
+`fit.min <- lm( FE ~ 1, fe )`
+`stepAIC( fit.min, scope = ~ 1, direction = "backward")` 
+These functions only return the y intercept of 35.04  because FE ~1 means multiply the beta1 by 1 and since beta1 is zero, we only get back the y intercept, beta0
 
+`fit.full <- lm(FE ~ ., fe)`
+In the second case, we are loading all the predictors into the logistic model, which means the STEPAIC will search all the appropriate subsets and return the best predictors for the logistic model.
 
 
 ## Logsitic and Inverse Logistic Transformation 
@@ -85,15 +111,37 @@ Using Fuel Economy data set from the **AppliedPredictiveModeling** Package.
 
 logistic <- function(x) { 
   ... # Your work here  
+  denominator = 1 - exp(1)^(-x)
+  
+  result = 1/denominator
+  
 }
 
-qplot( ... )
+xaxis <- seq(from = 0, to = 1, by = .1) 
+yaxis <- seq(from = 0, to = 1, by = .1) 
+
+# Dont know how to pass logistic function to sapply so doing it inline
+fresult <- sapply(xaxis, function(x) 1/ (1 - exp(1)^(-x)))
+
+fresult[!is.finite(fresult)] <- 0
+
+?qplot
+
+#plot wont work, get error : doesn't know how to deal with data of class numeric
+qplot(xaxis,yaxis,data=fresult )
 
 logistic_inv <- function(y) { 
   ... # Your work  
+  denominator = 1 - exp(1)^(x)
+  
+  result = 1/denominator
 }
 
-qplot(...) 
+#removed negative from x
+fresult <- sapply(xaxis, function(x) 1/ (1 - exp(1)^(x)))
+
+#plot wont work, get error : doesn't know how to deal with data of class numeric
+qplot(xaxis,yaxis,data=fresult )
 
 ```
 
@@ -113,7 +161,11 @@ c(0,0.5,1) %>% logistic_inv
 Using the GermanCredit data from the **Caret** package/ UCI Machine Learning Library, create a model for `Class` ("Good" vs. "Bad" ). Show your model performance.  
 
 ```{r}
+install.packages("caret")
+library(caret)
+data("GermanCredit")
 
+glm(Class ~ ., data=GermanCredit, family = "binomial")
 
 ```
 
@@ -135,7 +187,7 @@ Sythesize the following features 1000-element vectors:
 - x3: a uniformly distributed feature with `min=0` and `max=50`. 
 
 ```{r}
-nsamples = 20
+nsamples = 100
 
 x1 <- rnorm(nsamples,20,20)  
 x2 <- rlnorm(nsamples, meanlog=1, sdlog = 1.2)
@@ -171,10 +223,19 @@ fit <- lm( y ~ . , dat )
 coef(fit)
 
 fit
+
+summary(fit)
 ```
 
 - Did you recover the betas? 
+Recoved the betas at x1=2.8 , x2 = 1.7 and x3 = 7.1
+
 - Is the model good?
+Based on the pvalues, x1 and x3 have three asteriks meaning they are highly accurate. x2 has zero asterkiks so its not accurate.
+
 - What happens if increase the value of `nsamples`? Decrease it?
+Inreasing nsamples to 100 improves the significance level, and now all three betas have 3 asteriks meaning they are accurate.
+
 - What transformations would you apply to x1? x2? x3? 
+
 
