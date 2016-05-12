@@ -133,6 +133,17 @@ The functions should take two logical vectors of the same length, `y` and `yhat`
 
 ```{r}
 
+prevalence = function(y,yhat) {}
+accuracy   =  .. 
+error_rate = ..
+tpr = ..
+fpr = ..      # See Example
+tnr = ..
+sensitivity = ..
+specificity = ..
+recall = .. 
+precision = ..
+
 # EXAMPLE: fpr
 # The FPR is THE NUMBER OF FALSE POSITIVES / NEGATIVES (TN+FP)
 
@@ -143,6 +154,22 @@ y = test$Versicolor == 'versicolor' # y is the positive sample in this case
 yhat = predict(fit.glm, test, type="response") > threshold
 #yhat2 = predict(fit.glm, test, type="response")
 
+#table(yhat2)
+
+a <- data.frame(y)
+#a$yhat <- data.frame(yhat)
+
+a$y <- y
+a$yhat <- yhat
+a$test_non_equality <- (y != yhat)
+a$y_equal_yhat <- (y == yhat)
+
+
+
+#table(y, yhat)
+
+
+
 install.packages("gmodels")
 library("gmodels")
 
@@ -151,6 +178,13 @@ CrossTable(y, yhat, prop.chisq = FALSE, prop.c = FALSE, prop.r = FALSE, dnn = c(
 
 #*Remember confusion matrix uses (predicted, actual) as order of operations
 confusionMatrix(yhat, y, positive = "TRUE")
+
+table(y)
+table(a$test_non_equality)
+
+#(y != yhat) will create a vector where items that are true are where actual and predicted arent true, so this will count FP and FN.
+# y & (...) will count only and the true items (which are FP and FN) and only equate to true for items that are actual TRUE, hence counting FP / Total Negatives
+#sum(y & (y != yhat))
 
 #PREVALENCE
 prevalence <- function(y,yhat) {

@@ -34,7 +34,7 @@ Revisit the GermanCredit data. Use `caret` to build models of `Class` using the 
 - randomForest
 - A method of your choice from the Caret Model List (you will need to install any dependencies)
 
-Save the caret objects with the names provided.
+Save the   caret objects with the names provided.
 
 ```{r}
 

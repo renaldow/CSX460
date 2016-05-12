@@ -16,3 +16,10 @@ quantile(testoutliers$Test.Outliers)
 quantile(testoutliers$Test.Outliers, probs = c(0.05, 0.90))
 
 boxplot(testoutliers$Test.Outliers, main="Boxplot for testing outliers", ylab="Numbers")
+
+
+# test for loop
+for(i in 1:10)
+{
+  print(i)
+}
