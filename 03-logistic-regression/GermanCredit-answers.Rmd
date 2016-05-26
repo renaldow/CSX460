@@ -29,6 +29,7 @@ Column Names: `r gc %>% names`
 Column Types: 
 
 ```{r}
+#install.packages("hash")
 library(hash)
 cls = gc %>% sapply(class) %>% hash %>% invert
 
@@ -49,11 +50,12 @@ The predictor is `Class`, see `?GermanCredit`. It is a factor and has values `Ba
 
 ```{r}
 
-# dn <- c( gc$Class, rep(NA_character_,100) )
+dn <- c( gc$Class, rep(NA_character_,100) )
 table(dn, useNA="ifany")
 gc$Class %>% table( useNA="ifany" )
 qplot(gc$Class) + xlab("Class")
 
+str(gc)
 ```
 
 
@@ -75,7 +77,9 @@ Intuition tells me that `Amount` might be a good predictor. Let's look:
 
 
 ```{r}
-class(gc$Amount)
+?class
+gc %>% View 
+class(gc$Amount) #class just prints the feature type (RW)
 var(gc$Amount)
 qplot(gc$Amount)  # positive, skewed
 qplot(gc$Amount %>% log %>% scale )  # Normalized
@@ -94,10 +98,13 @@ fit <- glm( Class ~  Amount, data=gc, family=binomial )
 # Seems to work, let's try caret
 # 
 
-ctrl <- trainControl( method="boot", number=5
-                      , classProb=TRUE, savePrediction=TRUE )
+#trainControl() is to set custom controls, specifically bootstrap
+ctrl <- trainControl( method="boot", number=5, classProb=TRUE, savePrediction=TRUE )
 
+#train 
 fit <- train(Class ~ Amount, data=gc, method="glm", family="binomial", trControl=ctrl)
+
+str(gc)
 
 fit   # Caret output
 fit$finalModel  %>% summary  # Model output
@@ -129,8 +136,7 @@ qplot(gc$Duration)  # Fairly uniform
 ```
 
 ```{r}
-fit <- train( Class ~ Amount + Duration, data=gc, trControl=ctrl
-              , method="glm", family="binomial" )
+fit <- train( Class ~ Amount + Duration, data=gc, trControl=ctrl, method="glm", family="binomial" )
 
 fit   # Caret output
 fit$finalModel  %>% summary  # Model output
@@ -150,8 +156,7 @@ Fit the full
 
 ```{r}
 set.seed(1)
-fit <- train( Class ~ ., data=gc, trControl=ctrl
-              , method="glm", family="binomial" )
+fit <- train( Class ~ ., data=gc, trControl=ctrl, method="glm", family="binomial" )
 
 
 
@@ -178,9 +183,19 @@ Use `stepAIC` as feature selection, but this takes a long time.
 ## Diagnostics
 
 ```{r}
+#install.packages("pROC")
 library(pROC)
 roc <- roc(fit$pred$obs, fit$pred$Bad, auc=TRUE )
 roc %>% plot( print.auc=TRUE, grid=TRUE)
+
+
+fit.glm.performance.auc <- performance(fit.glm.prediction, measure = "auc")
+unlist(fit.glm.performance.auc@y.values)
+
+#fit$pred %>% View #RW
+head(fit$pred$Bad)
+head(fit$pred)
+head(fit$pred$obs)
 
 ```
 
@@ -190,18 +205,28 @@ Okay, model is performing -- let's refine our features.
 ## TRY OTHER METHODS
 
 ```{r}
-fit.knn <- train( Class ~ ., data=gc, trControl=ctrl
-              , method="knn", tuneGrid=data.frame( k=c(40,50,60)))
+#fit.knn <- train( Class ~ ., data=gc, trControl=ctrl, method="knn", tuneGrid=data.frame(k=c(40,50,60)))
 
+fit.knn <- train( Class ~ ., data=gc, trControl=ctrl, method="knn", tuneGrid=data.frame(k=c(40,50,60,70,80,90)))
+
+
+library("rpart")
+#install.packages("rpart.plot")
+library("cluster")
+library("maptree")
+library("rpart.plot")
+
+# regression trees
 fit.rpart <- rpart( Class ~ . , data=gc, cp=0.02 )
 fit.rpart %>% maptree::draw.tree(nodeinfo = T ) 
 
-library(maptree)
-fit.rpart <- train( Class ~ ., data=gc, trControl=ctrl
-              , method="rpart", tuneLength=20) 
+rpart.plot(fit.rpart, digits = 4, fallen.leaves = TRUE, type = 3, extra=101)
+
+fit.rpart <- train( Class ~ ., data=gc, trControl=ctrl, method="rpart", tuneLength=20)
 fit.rpart
 
 fit.rpart$finalModel %>% draw.tree( )
+
 ```
 
 

@@ -218,9 +218,10 @@ tnr <- function(y,yhat)
 tnr(y,yhat)
 
 #Sensitivity
+# Remember that False Negative means predicted false, but actual was true 
 sensitivity <- function(y,yhat) {
   tp <- sum(y & (y == yhat))
-  fn <- sum(!y & (y != yhat))
+  fn <- sum(y & (y != yhat))
   result <- tp / (tp + fn) # TP / TP + FN
   result
 }
@@ -240,7 +241,7 @@ specificity(y,yhat)
 #Precision
 precision <- function(y,yhat) {
   tp <- sum(y & (y == yhat))
-  fp <- sum(y & (y != yhat))
+  fp <- sum(!y & (y == yhat))
   result <- tp / (tp + fp) # TP / TP + FP
   result
 }
@@ -250,14 +251,14 @@ precision(y,yhat)
 #Recall
 recall <- function(y,yhat) {
   tp <- sum(y & (y == yhat))
-  fn <- sum(!y & (y != yhat))
+  fn <- sum(y & (y != yhat))
   result <- tp / (tp + fn) # TP / TP + FN
-  result
+  result 
 }
 
 recall(y,yhat)
 
-#posPredValue(yhat, y, positive = "TRUE")
+posPredValue(factor(yhat), factor(y), positive = "TRUE")
 
 #ACCURACY
 accuracy = function(y,yhat)

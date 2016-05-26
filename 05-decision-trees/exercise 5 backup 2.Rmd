@@ -1,0 +1,253 @@
+ 
+title: "05-exercises"
+author: "Your Name Here"
+date: "2016-05-xx"
+output: html_document
+---
+
+## Reading:
+- **APM** Chapter 8.1-8.5 "Regression Trees and Rule-Based Models" (25 pages)
+- **APM** Chapter 14.1-14.5 "Classification Trees and Rule-Based"  
+
+```{r, echo=FALSE, results='hide', warning=FALSE }
+packs <-  c('ggplot2', 'magrittr', 'dplyr', 'caret', 'AppliedPredictiveModeling')
+
+for( nm in packs ) { 
+  # message(nm)
+  if( ! nm  %in% installed.packages()[,1]  ) install.packages(nm)
+  library(nm, character.only = TRUE)
+}
+
+.. = NULL  # For Aesthetics
+
+```
+
+
+## Exercise 1: GermanCredit
+
+Revisit the GermanCredit data. Use `caret` to build models of `Class` using the following techniques:
+
+- glm
+- rpart
+- knn
+- party::ctree
+- randomForest
+- A method of your choice from the Caret Model List (you will need to install any dependencies)
+
+Save the   caret objects with the names provided.
+
+```{r}
+
+data("GermanCredit")
+
+# (RW) First thing, ALWAYS, ALWAYS spend 5 minutes analyzing CVS file in excel to gain familiarity with data features and labels before building classifiers.
+
+# Create a CSV GermanCredit file
+#x <- data.frame(GermanCredit)
+#write.csv(x, file = "GermanCredit.csv")
+
+
+# Your work here. 
+
+# Have to convert class to factor for regression model since models need number not text.
+data("GermanCredit")
+GermanCredit$Class <- factor(GermanCredit$Class)
+#GermanCredit$Class <- as.numeric(GermanCredit$Class)
+
+# use sample() to select 1000 random numbers
+# If using train() method in R, don;t need to split like this since bagging already takes care of ensuring the training data is diversified
+random_sample <- sample(1000, 1000)
+train_indexes <- random_sample[1:700]
+test_indexes <- random_sample[701:1000]
+
+length(train_indexes)
+length(test_indexes)
+
+germancredit_train <- GermanCredit[train_indexes,]
+germancredit_test <- GermanCredit[test_indexes,]
+
+germancredit_train_labels <- germancredit_train$Class
+germancredit_test_labels <- germancredit_test$Class
+
+prop.table(table(GermanCredit$Class))
+prop.table(table(germancredit_train$Class))
+prop.table(table(germancredit_test$Class))
+
+str(germancredit_train)
+
+# Using caret and train() for automatic parameter tuning. Train serves as standardized interface for over 175 different machine learning models
+
+tc <- trainControl( method="cv", number=10, classProb=TRUE, savePrediction=TRUE )
+ 
+#germancredit_train %>% View
+
+#get column index of class
+#classColumnIndex <- grep("Class", colnames(germancredit_train))
+  
+# Getting 12 warnings: prediction from a rank-deficient fit may be misleading
+fit.glm <- train(Class ~ ., data = GermanCredit[,-nzv(GermanCredit)], method="glm", family = "binomial", trControl=tc)
+
+str(germancredit_train)
+
+germancredit_train %>% View
+
+# Trying with regular glm, Train the regression model with training data
+fit.glm <- glm(germancredit_train$Class ~ ., data = germancredit_train, family = "binomial")
+
+# Now predict using test data
+# Getting error: prediction from a rank-deficient fit may be misleading
+fit.pred <- predict(fit.glm, newdata = germancredit_test)
+
+summary(fit.glm)
+
+# Attempting Classification with KNN 
+# Since using KNN, need to normalize features since distance calculation of KNN is heavily dependent upon the measurement scale of input features
+
+normalize <- function(x) {
+  return ( (x - min(x)) / (max(x) - min(x)) )
+}
+
+#test it
+normalize(c(1,2,3,4, 5))
+gc <- GermanCredit
+
+#convert category to factor
+gc$Class <- factor(gc$Class)
+
+#now lets normalize
+
+#get column index of class
+classColumn <- grep("Class", colnames(gc))
+
+#normalize every column but Class column
+germancredit_n <- as.data.frame(lapply(gc[,-classColumn], normalize)) 
+
+#add back Class column
+germancredit_n$Class <- gc[,classColumn]
+
+str(germancredit_n)
+
+#Remove NaN
+#Retrieve list of NaN columns
+nan <- sapply(germancredit_n, function(x) all(is.nan(x)))
+#Remove NaN columns
+germancredit_n <- germancredit_n[, !nan]
+
+#create training and test set
+germancredit_n_train <- germancredit_n[train_indexes,]
+germancredit_n_test <- germancredit_n[test_indexes,]
+
+prop.table(table(germancredit_n$Class))
+prop.table(table(germancredit_n_train$Class))
+prop.table(table(germancredit_n_test$Class))
+
+#Get labels for training and test set
+germancredit_n_train_labels <- germancredit_n_train$Class
+germancredit_n_test_labels <- germancredit_n_test$Class
+
+library("class")
+
+#Get Class columns for training and test set
+trCol <- grep("Class", colnames(germancredit_n_train))
+testCol <- grep("Class", colnames(germancredit_n_test))
+
+#Run KNN classifier with labels removed from training and test data
+germancredit_test_pred <- knn(train=germancredit_n_train[,-trCol], test=germancredit_n_test[,-testCol], cl=germancredit_n_train_labels, k=21)
+?knn
+summary(germancredit_test_pred)
+
+library("gmodels")
+CrossTable(x = germancredit_n_test_labels, y=germancredit_test_pred, prop.chisq=FALSE)
+
+confusionMatrix(germancredit_test_pred, germancredit_n_test_labels, positive="Bad")
+
+#Error rate of ~29% so performance is not good. Lets investigate ROC
+
+#install.packages("ROCR")
+library("ROCR")
+
+###TRAIN KNN###
+germancredit_test_pred_prob <- knn(train=germancredit_n_train[,-trCol], test=germancredit_n_test[,-testCol], cl=germancredit_n_train_labels, k=21, prob=TRUE)
+
+pred_prob_values <- attr(germancredit_test_pred_prob,"prob")
+
+pred <- prediction(predictions = pred_prob_values, labels = germancredit_n_test_labels)
+
+perf <- performance(pred, measure="tpr", x.measure="fpr")
+plot(perf,main="ROC Curve for GermanCredit data", col="blue", lwd=3)
+abline(a=0,b=1,lwd=2,lty=2)
+
+
+"ROC Curve"
+fit.glm.prediction <- prediction(predictions = fit.glm$pred$Good, labels = fit.glm$pred$obs) 
+fit.glm.performance <- performance(fit.glm.prediction, measure = "tpr", x.measure = "fpr") 
+plot(fit.glm.performance, main = "ROC Curve for GermanCredit", col="blue", lwd = 3)
+abline(a=0, b=1, lwd=2, lty=2)
+
+
+perf.auc <- performance(pred, measure="auc")
+unlist(perf.auc@y.values)
+
+str(germancredit_n_train)
+str(germancredit_n_test)
+?knn
+
+germancredit_train
+germancredit_test
+#remove class before normalize
+germancredit_train$Class <- NULL
+#normalize
+germancredit_train_n <- as.data.frame(lapply(germancredit_train, normalize)) 
+
+#Remove NaN Columns
+
+
+
+
+table(germancredit_test$Personal.Female.Single)
+
+fit.knn <- 
+
+fit.knn <- train(germancredit_n_train$Class ~ ., data = germancredit_n_train[,-trCol], method="knn")
+str(fit.knn)
+
+fit.knnpred <- predict(fit.knn, germancredit_n_test[,-testCol])
+
+fit.knnpred_prob <- predict(fit.knn, germancredit_n_test[,-testCol], type="prob")
+head(fit.knnpred_prob)
+confusionMatrix(fit.knnpred, germancredit_n_test_labels, positive="Bad")
+
+
+
+fit.rpart <- ..
+fit.rf <- ..
+fit.myown <- ..
+
+
+```
+
+
+- Compare the models using `caret::confusionMatrix`
+- Comparing the models Using the `pROC` packages
+  - create ROC curves for the models 
+  
+Show your work! 
+
+```{r}
+
+.. # YOUR WORK HERE
+
+```
+
+
+Q: Which models would you select based on these tools?
+
+Q: If you assume that a `Class=="bad""` is 10 more costly than `Class=="good"`, determine your threshold for the model of your choice.  Show your work.
+
+
+```{r}
+
+.. # YOUR WORK HERE
+
+
+```

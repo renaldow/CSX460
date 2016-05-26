@@ -1,6 +1,6 @@
----
+ 
 title: "05-exercises"
-author: "Your Name Here"
+author: "Renaldo Williams"
 date: "2016-05-xx"
 output: html_document
 ---
@@ -38,16 +38,79 @@ Save the   caret objects with the names provided.
 
 ```{r}
 
+data("GermanCredit")
+
+# (RW) ALWAYS, ALWAYS spend 5 minutes visually observing CVS file in excel to become familiarity with  features and labels, before building classifier.
+
+# Create a CSV GermanCredit file
+#x <- data.frame(GermanCredit)
+#write.csv(x, file = "GermanCredit.csv")
+
 # Your work here. 
 
-fit.glm <- ..
-fit.knn <- ..
-fit.rpart <- ..
-fit.rf <- ..
+# Have to convert class to factor for regression model since models need number not text.
+data("GermanCredit")
+GermanCredit$Class <- factor(GermanCredit$Class)
+#GermanCredit$Class <- as.numeric(GermanCredit$Class)
+
+# Using caret and train() for automatic parameter tuning. Train serves as standardized interface for over 175 different machine learning models
+
+ctrl <- trainControl( method="cv", number=10, classProb=TRUE, savePrediction=TRUE)
+#Setting the custom resampling methods below don't improve the model performance much more than cv
+#ctrl <- trainControl( method="LGOCV", p=0.85, classProb=TRUE, savePrediction=TRUE)
+#ctrl <- trainControl( method="boot", number=60, classProb=TRUE, savePrediction=TRUE)
+#ctrl <- trainControl( method="repeatedcv", number=30, repeats = 30, classProb=TRUE, savePrediction=TRUE)
+
+# Getting 12 warnings: prediction from a rank-deficient fit may be misleading
+# nzr is to identify near zero variance and remove those predictors, see ?nzv
+#gc_nzv <- GermanCredit[,-nzv(GermanCredit)]
+fit.glm <- train(Class ~ ., data = GermanCredit, method="glm", family = "binomial", trControl=ctrl)
+
+fit.glm$pred %>% View
+
+
+## KNN 
+
+#trainControl() is to set custom controls, specifically bootstrap
+ctrl <- trainControl( method="cv", number=10, classProb=TRUE, savePrediction=TRUE )
+
+fit.knn <- train(Class ~ ., data = GermanCredit,trControl=ctrl, method="knn",tuneGrid=data.frame(k=c(1,5,10,30,40,50,60)))
+
+fit.knn
+
+fit.knn$pred %>% View
+
+
+## RPART 
+
+#trainControl() is to set custom controls, specifically bootstrap
+ctrl <- trainControl( method="cv", number=10, classProb=TRUE, savePrediction=TRUE )
+
+fit.rpart <- train(Class ~ ., data = GermanCredit,trControl=ctrl, method="rpart", cp=0.02, tuneLength=20)
+
+fit.rpart
+
+fit.rpart$pred %>% View
+
+
+
+
+## RF 
+
+#trainControl() is to set custom controls, specifically bootstrap
+ctrl <- trainControl( method="cv", number=10, classProb=TRUE, savePrediction=TRUE )
+
+fit.rf <- train(Class ~ ., data = GermanCredit,trControl=ctrl, method="rf")
+
+fit.rf
+
+fit.rf$pred %>% View
+
+
 fit.myown <- ..
 
 
-````
+```
 
 
 - Compare the models using `caret::confusionMatrix`
@@ -58,7 +121,133 @@ Show your work!
 
 ```{r}
 
-.. # YOUR WORK HERE
+## GLM
+confusionMatrix(fit.glm$pred$pred,fit.glm$pred$obs, positive="Bad")
+#CrossTable(fit.glm$pred$pred,fit.glm$pred$obs)
+
+summary(fit.glm)
+
+fit.glm.sensitivity <- sensitivity(fit.glm$pred$pred, fit.glm$pred$obs, positive="Bad")
+
+## Sensitivity at ~49%
+"Sensitivity"
+fit.glm.sensitivity
+
+fit.glm.specificity <- specificity(fit.glm$pred$pred, fit.glm$pred$obs, positive="Bad")
+
+## Specificity at ~89%
+"Specificity"
+fit.glm.specificity
+
+#install.packages("pROC")
+library(pROC)
+
+## ROC Curve
+## This function assumes that the second class is the event of interest, so we reverse the labels.
+roc <- roc(fit.glm$pred$obs, fit.glm$pred$Bad, levels = rev(levels(fit.glm$pred$obs)), auc=TRUE )
+
+## By default, the x-axis goes backwards, used the option legacy.axes = TRUE to get 1-spec on the x-axis moving from 0 to 1
+plot(roc, legacy.axes = TRUE,print.auc=TRUE,grid=TRUE)
+
+## AUC for glm is ~78%
+"AUC" 
+auc(roc)
+
+
+## KNN
+confusionMatrix(fit.knn$pred$pred,fit.knn$pred$obs, positive="Bad")
+
+summary(fit.glm)
+
+fit.knn.sensitivity <- sensitivity(fit.knn$pred$pred, fit.knn$pred$obs, positive="Bad")
+
+## Sensitivity for KNN at ~14%
+"Sensitivity"
+fit.knn.sensitivity
+
+fit.knn.specificity <- specificity(fit.knn$pred$pred, fit.knn$pred$obs, positive="Bad")
+
+## Specificity for KNN at ~90%
+"Specificity"
+fit.knn.specificity
+
+#install.packages("pROC")
+library(pROC)
+
+## ROC Curve
+## This function assumes that the second class is the event of interest, so we reverse the labels.
+roc <- roc(fit.knn$pred$obs, fit.knn$pred$Bad, levels = rev(levels(fit.knn$pred$obs)), auc=TRUE )
+
+## By default, the x-axis goes backwards, used the option legacy.axes = TRUE to get 1-spec on the x-axis moving from 0 to 1
+plot(roc, legacy.axes = TRUE,print.auc=TRUE,grid=TRUE)
+
+## AUC for KNN is ~55%
+"AUC" 
+auc(roc)
+
+
+## RPART
+confusionMatrix(fit.rpart$pred$pred,fit.rpart$pred$obs, positive="Bad")
+
+summary(fit.rpart)
+
+fit.rpart.sensitivity <- sensitivity(fit.rpart$pred$pred, fit.rpart$pred$obs, positive="Bad")
+
+## Sensitivity for RPART is 29%
+"Sensitivity"
+fit.rpart.sensitivity
+
+fit.rpart.specificity <- specificity(fit.rpart$pred$pred, fit.rpart$pred$obs, positive="Bad")
+
+## Specificity for RPART at ~87%
+"Specificity"
+fit.rpart.specificity
+
+#install.packages("pROC")
+library(pROC)
+
+## ROC Curve
+## This function assumes that the second class is the event of interest, so we reverse the labels.
+roc <- roc(fit.rpart$pred$obs, fit.rpart$pred$Bad, levels = rev(levels(fit.rpart$pred$obs)), auc=TRUE )
+
+## By default, the x-axis goes backwards, used the option legacy.axes = TRUE to get 1-spec on the x-axis moving from 0 to 1
+plot(roc, legacy.axes = TRUE,print.auc=TRUE,grid=TRUE)
+
+## AUC for RPART is ~68%
+"AUC" 
+auc(roc)
+
+## RF
+confusionMatrix(fit.rf$pred$pred,fit.rf$pred$obs, positive="Bad")
+
+summary(fit.rf)
+
+fit.rf.sensitivity <- sensitivity(fit.rf$pred$pred, fit.rf$pred$obs, positive="Bad")
+
+## Sensitivity for RF is 32%
+"Sensitivity"
+fit.rf.sensitivity
+
+fit.rf.specificity <- specificity(fit.rf$pred$pred, fit.rf$pred$obs, positive="Bad")
+
+## Specificity for RF is 91%
+"Specificity"
+fit.rf.specificity
+
+#install.packages("pROC")
+library(pROC)
+
+## ROC Curve
+## This function assumes that the second class is the event of interest, so we reverse the labels.
+roc <- roc(fit.rf$pred$obs, fit.rf$pred$Bad, levels = rev(levels(fit.rf$pred$obs)), auc=TRUE )
+
+## By default, the x-axis goes backwards, used the option legacy.axes = TRUE to get 1-spec on the x-axis moving from 0 to 1
+plot(roc, legacy.axes = TRUE,print.auc=TRUE,grid=TRUE)
+
+## AUC for RPART is ~77%
+"AUC" 
+auc(roc)
+
 
 ```
 
@@ -71,6 +260,7 @@ Q: If you assume that a `Class=="bad""` is 10 more costly than `Class=="good"`, 
 ```{r}
 
 .. # YOUR WORK HERE
+"I would select the Random Forrest because the Sensivity(32%) and Specificity(91%) turned out to be highest, also with a AUC of 77% and error rate of 26% which is the lowest I could get the error rate"
 
 
 ```
