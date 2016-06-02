@@ -35,6 +35,7 @@ Hint: See `?cars2010`
 - After the **Fuel Economy** data is loaded, combine three data sets into one data set. (Note: The name `dat` is very often used in these situations, `data` is a reserved R word.)  
 
 ```{r}
+
 dat3years <- rbind(cars2010,cars2011,cars2012)
 
 naive_guess = mean(dat3years$FE)
@@ -78,7 +79,7 @@ fit.dat3years %>% summary()
 
 
 #dot means use all variables 
-fit.dat3years <- lm(FE ~ . + EngDispl, data = dat3years)
+fit.dat3years <- lm(FE ~ ., data = dat3years)
 
 fit.dat3years
 
@@ -128,7 +129,6 @@ samp <- dat3years %>% dplyr::sample_n(10)
 #Naive guess (red line) is just a good place to start, always need a good place to start
 samp %>% ggplot(aes(x=EngDispl, y=FE) ) + geom_point() + geom_hline(yintercept=naive_guess, color="red")
 
-
 ```
 
 
@@ -172,7 +172,7 @@ Use these functions to evaluate the loss/performance of:
 
 ```{r}
 
-fit.2010 <- lm( FE ~ EngDispl, data=cars2010 )
+fit.2010 <- lm( FE ~ ., data=cars2010 )
 
 ```
 

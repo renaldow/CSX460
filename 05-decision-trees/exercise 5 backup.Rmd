@@ -188,10 +188,6 @@ germancredit_train$Class <- NULL
 #normalize
 germancredit_train_n <- as.data.frame(lapply(germancredit_train, normalize)) 
 
-#Remove NaN Columns
-
-
-
 
 table(germancredit_test$Personal.Female.Single)
 

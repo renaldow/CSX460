@@ -1,7 +1,7 @@
 ---
 title: "05-exercises"
-author: "Your Name Here"
-date: "2016-05-xx"
+author: "Renaldo"
+date: "2016-05-31"
 output: html_document
 ---
 
@@ -12,7 +12,7 @@ output: html_document
 - **APM** Chapter 13.2 & 13.4 "Non-Linear Classifcation Models"
 
 
-```{r,echo=FALSE}
+```{r, echo=FALSE, warning=FALSE, message=FALSE} 
 
 packs <-  c('AppliedPredictiveModeling', 'ggplot2', 'magrittr', 'dplyr')
 
@@ -26,7 +26,7 @@ for( nm in packs ) {
 data(FuelEconomy)
 .. = NULL  # Needed for aesthetics 
 
-FE <- dplyr::bind_rows(cars2010, cars2011, cars2012)    # Define Da
+FE <- dplyr::bind_rows(cars2010, cars2011)    # Define Da
 
 ```
 
@@ -36,25 +36,46 @@ FE <- dplyr::bind_rows(cars2010, cars2011, cars2012)    # Define Da
 This week we return to the Fuel Economy Data having learned much about model building. This assignment is to go through the process of building several regression models and pick the most predictive model. Use the `FE` data set created for you above.
 
 
-Start by making choosing a metric and making a naive guess of model performance: 
+Start by choosing a metric and making a naive guess of model performance: 
 
-Metric: _______________
-Naive Guess: _______________
-Expected Model Performance (based on Naive Guess): _______________
+Metric: _____MAE__________
+Naive Guess: _____MAE of 6.3__________
+Expected Model Performance (based on Naive Guess): ___better than naive guess, maybe 1.0 MAE_____
 
 Show your work below for the calculations
 
-```{r} 
+```{r, echo=TRUE, warning=FALSE, message=FALSE} 
 
+fe_mean <- mean(FE$FE)
+fe_mean
+
+naive_guess = fe_mean
+FE$mean <- naive_guess
+
+#Using Mean absolute error
+MAE <- function(actual, predicted) {
+  mean(abs(actual - predicted))
+}
+
+#Based on MAE
+err_naive_guess = MAE(FE$FE, FE$mean)
+
+err_naive_guess
+
+library(ggplot2)
+
+#add indexes for the data
+FE$Index <-c(1:1447)
+FE$NaiveGuessError <- FE$FE - naive_guess
+
+#Plotting how much the error deviates from the naive guess 
+FE %>% ggplot(aes(x=Index, y=NaiveGuessError) ) + geom_point() + geom_hline(yintercept=err_naive_guess, color="red") + stat_smooth(method = "lm", se=FALSE)
   
-naive_guess = ..
-
-err_naive_guess = ..
 
 ```
 
 
-Based only your intuition, how low do your think you can get your metric: ___________
+Based only your intuition, how low do you think you can get your metric: _____I think a lot lower than the average, since the average is the simplest guess without using any models______
 
 
 ## Examine your data
@@ -64,28 +85,64 @@ Based only your intuition, how low do your think you can get your metric: ______
  * Make a guess of a strong predictor: _________________  
  * Plot your response vs your predictor. 
 
-```{r}
+```{r, echo=TRUE, warning=FALSE, message=FALSE} 
 
-.. # Your work here
+# Using lm to build model for 2010 and 2011 data
+fit.FE <- lm( FE ~ ., data=FE ) 
+
+# testing predictions with 2012 data
+fit.y_FE <- predict(fit.FE, data=cars2012 )
+
+# plotting actual versus predicted
+plot(x = FE$FE, y = fit.y_FE, main="Plotting actual verses predicted Fuel Economy", xlab = "Predicted", ylab = "Actual")
+
+rmse <- function(y,yhat) {
+
+  ( y - yhat )^2  %>% mean %>% sqrt 
+}
+
+# root mean squared error ~ 3.32
+rmse(FE$FE, fit.y_FE)
 
 ```
-
-
 
 ## Build Simple Models
 
 Using **caret**, build a simple linear model and a simple tree model. 
 
-```{r}
+## LM model
 
-fit.lm <- .. # Your model here
-fit.rp <- .. # Your model here
+```{r, echo=TRUE, warning=FALSE, message=FALSE} 
+
+ctrl <- trainControl( method="cv", number=10, savePrediction=TRUE)
+fit.lm <- train(FE ~ ., data = FE, method="lm", trControl=ctrl)
+summary(fit.lm)
+
+#fit.lm$pred %>% View
+
+# rmse is 3.49
+rmse(fit.lm$pred$obs, fit.lm$pred$pred)
+
+# plotting actual versus predicted for caret
+plot(x = fit.lm$pred$obs, y = fit.lm$pred$pred, main="Plotting actual verses predicted Fuel Economy for caret", xlab = "Predicted", ylab = "Actual")
+```
+
+## RP model
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE} 
+
+#I dont know how to train RP for regression model?
+ctrl <- trainControl( method="cv", number=10, savePrediction=TRUE)
+fit.rp <- train(FE ~ ., data = FE,trControl=ctrl, method="rpart", cp=0.02, tuneLength=20)
+
+# trying C5.0 
+#ctrl <- trainControl( method="cv", number=10, savePrediction=TRUE)
+fit.rf <- train(FE ~ ., data = FE, method="rf")
 
 ```
 
 
 What did you learn about the data from these models.
-
 
 
 ## Build More Advanced Models
@@ -94,18 +151,44 @@ Now refine your models. Use **caret** to build advanced models:
 - one that uses model averaging (bagging) 
 - one that uses boosting 
 
-```{r}
+## Bagging
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE} 
 
 # Your work here.
-fit.bag   <- .. # bagging model 
+#install.packages("ipred")
+library(ipred)
 
-fit.boost <- .. # boosting model
+fit.bag   <- bagging(FE ~ ., data = FE, nbagg = 25)
+fit.bagpred <- predict(fit.bag, cars2012)
 
+# rmse is 4.4
+rmse(cars2012$FE, fit.bagpred)
 
+# plotting actual versus predicted for caret
+plot(x = cars2012$FE, y = fit.bagpred, main="Plotting actual verses predicted Fuel Economy for Bagging", xlab = "Predicted", ylab = "Actual")
+
+```
+
+## Boosting
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE} 
+
+#install.packages("adabag")
+library(adabag)
+fit.boost <- boosting(FE ~ ., data = FE)
+
+"I keep hitting eror Error in 1:nrow(object$splits) : argument of length 0"
 ```
 
 
 ## Conclusion 
 
-Which model would you use and why?  Under different circumstances why would you choose one of the other models.
+Which model would you use and why?  
+
+I would chose the linear model with a RME of 3.49 from the caret package since it takes care of centering, scaling, and boostrapping. If this model were used on real data, my thought is the RME would perform closely to what I measured here.
+
+Under different circumstances why would you choose one of the other models.
+
+I was not able to get rpart or random forrest to work on regression model, however if it worked it would be good candidate since trees are interporable and helps filter missing data.
 

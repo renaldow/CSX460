@@ -2,7 +2,7 @@
 title: "Sensitivity and Specificity"
 author: "Renaldo Williams"
 date: "October 5, 2015"
-output: html_document
+output: pdf_document
 ---
 
 
@@ -44,7 +44,7 @@ for( nm in packs ) {
 #x <- runif(20,1,20) #take random number from uniform distribution take 20 numbers from 1 - 20
 #x_mean = mean(x)
 
-#k=10
+k=10
 
 # CROSS-VALIDATION
 # Take 
@@ -74,15 +74,14 @@ sd_boot <- sapply(1:k, function(i) sample(x,replace=TRUE) %>% mean ) %>% sd #tak
 Here's a really simple Model of Versicolor iris based on the **iris** data :
 
 ```{r}
-set.seed(1)
+
 
 data(iris)
 
 qplot( data=iris, x=Petal.Length, y=Sepal.Length, color=Species )
 
 # Create Dependent Variable
-iris$Versicolor <- 
-  ifelse( iris$Species == 'versicolor', "versicolor", "other" ) %>% as.factor
+iris$Versicolor <- ifelse( iris$Species == 'versicolor', "versicolor", "other" ) %>% as.factor
 
 iris$Species = NULL 
 nrow(iris)
@@ -99,14 +98,13 @@ fit.pred <- predict(fit.glm, test)
 
 summary(fit.glm)
 summary(fit.pred)
-summary()
+
 
 table(test$Versicolor)
-table(fit.pred$Versicolor)
 
 cor(iris[c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")])
 
-install.packages("psych")
+#install.packages("psych")
 library("psych")
 
 pairs.panels(iris[c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")])
@@ -143,7 +141,7 @@ y = test$Versicolor == 'versicolor' # y is the positive sample in this case
 yhat = predict(fit.glm, test, type="response") > threshold
 #yhat2 = predict(fit.glm, test, type="response")
 
-install.packages("gmodels")
+#install.packages("gmodels")
 library("gmodels")
 
 # important to note: CrossTable uses y, yhat (actual, predicted) as order of arguments BUT confusionMatrix uses yhat, y (predicted, actual) as order of operations

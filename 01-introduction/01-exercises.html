@@ -11,6 +11,7 @@
 
 <meta name="author" content="Christopher Brown" />
 
+<meta name="date" content="2016-04-17" />
 
 <title>01-exercises</title>
 
@@ -110,7 +111,7 @@ $(document).ready(function () {
 
 <h1 class="title">01-exercises</h1>
 <h4 class="author"><em>Christopher Brown</em></h4>
-<h4 class="date"><em>April 6, 2016</em></h4>
+<h4 class="date"><em>April 17, 2016</em></h4>
 
 </div>
 
@@ -127,31 +128,24 @@ $(document).ready(function () {
 </div>
 <div id="solution" class="section level3">
 <h3>Solution</h3>
-<pre class="r"><code>#f &lt;- function(x) {
-  
-  # ...
-  #f = print(&quot;test string&quot;)
-#}
+<pre class="r"><code>x &lt;- c( 1, 5, 2, 8 ) 
 
-#f &lt;- function() { 
- # for (i in 1:10) {
-  #  if (!i %% 2){
-     # next
-    #}
-     # print(i)
-  #}
-#}
-
- x &lt;- c( 1, 5, 2, 8 ) 
 prod(x) / x</code></pre>
 <pre><code>## [1] 80 16 40 10</code></pre>
 <pre class="r"><code>f &lt;- function() { 
-  x &lt;- c( 1, 5, 2, 8 ) 
+  x &lt;- c( 1, 5, 2, 8, 22 ) 
   
   for(i in x){
       print(i)
   }
-}</code></pre>
+}
+
+f()</code></pre>
+<pre><code>## [1] 1
+## [1] 5
+## [1] 2
+## [1] 8
+## [1] 22</code></pre>
 </div>
 </div>
 <div id="exercise-2" class="section level2">
@@ -165,20 +159,48 @@ prod(x) / x</code></pre>
 </div>
 <div id="solution-1" class="section level3">
 <h3>Solution</h3>
-<pre class="r"><code>f &lt;- function(x) {
-  # ...
+<pre class="r"><code>#By Renaldo Williams
+
+#Create vector of 20 numbers
+x &lt;- 1:20
+
+#Create empty array vector
+vector &lt;- vector(mode=&quot;character&quot;, length=0)
+
+#Create function to convert to Fizz, Buzz, or FizzBuzz
+f &lt;- function(numbers) {
   
-}</code></pre>
-<p>myFunc &lt;- function (x, y) { out &lt;- x^2 out &lt;- out + y out }</p>
-<p>myFunc(2,3)</p>
-<pre class="r"><code>myFunc &lt;- function (x, y) {
-  result &lt;- x^2
-  result &lt;- result + y
-  result
+  for (i in 1:length(numbers)) { 
+    
+    #Use modulus to find if multiple of 3
+    if((numbers[i] %% 3 == 0) &amp;&amp; (numbers[i] %% 5 == 0))
+    {
+      vector[i] &lt;- &quot;FizzBuzz&quot;
+    }
+    #Use modulus to find if multiple of 5
+    else if(numbers[i] %% 5 == 0)
+    {
+      vector[i] &lt;- &quot;Buzz&quot;
+    }
+    #Use modulus to find if multiple of 3 and 5
+    else if(numbers[i] %% 3 == 0)
+    {
+      vector[i] &lt;- &quot;Fizz&quot;
+    }
+    else {
+      vector[i] &lt;- numbers[i]
+    }
+  }
+  
+  vector
 }
 
-myFunc(2,3)</code></pre>
-<pre><code>## [1] 7</code></pre>
+# run the function
+f(x)</code></pre>
+<pre><code>##  [1] &quot;1&quot;        &quot;2&quot;        &quot;Fizz&quot;     &quot;4&quot;        &quot;Buzz&quot;     &quot;Fizz&quot;    
+##  [7] &quot;7&quot;        &quot;8&quot;        &quot;Fizz&quot;     &quot;Buzz&quot;     &quot;11&quot;       &quot;Fizz&quot;    
+## [13] &quot;13&quot;       &quot;14&quot;       &quot;FizzBuzz&quot; &quot;16&quot;       &quot;17&quot;       &quot;Fizz&quot;    
+## [19] &quot;19&quot;       &quot;Buzz&quot;</code></pre>
 </div>
 </div>
 
